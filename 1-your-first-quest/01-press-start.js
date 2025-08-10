@@ -1,4 +1,4 @@
-// Press Start 🏁
+// Press Start 💻
 // Codédex
 
 console.log('https://dentrala.itch.io/elf-mail'); 
