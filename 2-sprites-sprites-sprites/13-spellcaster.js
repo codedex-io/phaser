@@ -1,80 +1,90 @@
 // Spellcaster ✨
 // Codédex
 
-const config = {
-  type: Phaser.AUTO,
-  width: 800,
-  height: 600,
-  scene: {
-    preload,
-    create,
-    update,
-  }
-};
-
-const game = new Phaser.Game(config);
-
 let player;
 let cursors;
-let keys;
 let speed = 3;
-let runSpeed = 6;
+let isCasting = false;
 let currentState;
-
 let background;
-let coin;
 
 const states = {
   idle: {
     onEnter() {
+      // Stop any current animation when idle
       player.anims.stop();
-      player.setFrame(0);
     },
     onUpdate() {
-      if (keys.space.isDown) return "attack";
-      if (keys.ctrl.isDown) return "play-flute";
-      if (keys.shift.isDown && !(cursors.left.isDown || cursors.right.isDown || cursors.up.isDown || cursors.down.isDown)) return "cast-spell";
-
-      if (cursors.left.isDown) return keys.shift.isDown ? "run-left" : "walk-left";
-      if (cursors.right.isDown) return keys.shift.isDown ? "run-right" : "walk-right";
-      if (cursors.up.isDown) return keys.shift.isDown ? "run-up" : "walk-up";
-      if (cursors.down.isDown) return keys.shift.isDown ? "run-down" : "walk-down";
-
+      // If casting spell, switch to casting animation for current direction
+      if (isCasting) return "cast-spell-" + player.direction;
+      // Check movement keys to change state
+      if (cursors.left.isDown) return "walk-left";
+      if (cursors.right.isDown) return "walk-right";
+      if (cursors.up.isDown) return "walk-up";
+      if (cursors.down.isDown) return "walk-down";
+      // Otherwise remain idle
       return "idle";
     },
     onExit() {}
   },
 
   "walk-left": {
-    onEnter() { player.anims.play("walk-left", true); },
+    onEnter() {
+      // Change texture to left walk spritesheet and play walk-left animation
+      player.setTexture("walk-left");
+      player.anims.play("walk-left", true);
+      player.direction = "left"; // Store current facing direction
+    },
     onUpdate() {
+      // If casting, switch to cast-spell-left state
+      if (isCasting) return "cast-spell-left";
+      // If left key released, return to idle
       if (!cursors.left.isDown) return "idle";
+      // Move player left
       player.x -= speed;
       return "walk-left";
     },
     onExit() {}
   },
+
   "walk-right": {
-    onEnter() { player.anims.play("walk-right", true); },
+    onEnter() {
+      player.setTexture("walk-right");
+      player.anims.play("walk-right", true);
+      player.direction = "right";
+    },
     onUpdate() {
+      if (isCasting) return "cast-spell-right";
       if (!cursors.right.isDown) return "idle";
       player.x += speed;
       return "walk-right";
     },
     onExit() {}
   },
+
   "walk-up": {
-    onEnter() { player.anims.play("walk-up", true); },
+    onEnter() {
+      player.setTexture("walk-up");
+      player.anims.play("walk-up", true);
+      player.direction = "up";
+    },
     onUpdate() {
+      if (isCasting) return "cast-spell-up";
       if (!cursors.up.isDown) return "idle";
       player.y -= speed;
       return "walk-up";
     },
     onExit() {}
   },
+
   "walk-down": {
-    onEnter() { player.anims.play("walk-down", true); },
+    onEnter() {
+      player.setTexture("walk-down");
+      player.anims.play("walk-down", true);
+      player.direction = "down";
+    },
     onUpdate() {
+      if (isCasting) return "cast-spell-down";
       if (!cursors.down.isDown) return "idle";
       player.y += speed;
       return "walk-down";
@@ -82,175 +92,155 @@ const states = {
     onExit() {}
   },
 
-  "run-left": {
-    onEnter() { player.anims.play("walk-left", true); },
-    onUpdate() {
-      if (!cursors.left.isDown || !keys.shift.isDown) return "idle";
-      player.x -= runSpeed;
-      return "run-left";
+  "cast-spell-left": {
+    onEnter() {
+      // Change texture and play casting animation facing left
+      player.setTexture("cast-spell-left");
+      player.anims.play("cast-spell-left");
+      // After animation completes, stop casting
+      player.once("animationcomplete-cast-spell-left", () => {
+        isCasting = false;
+      });
     },
-    onExit() {}
-  },
-  "run-right": {
-    onEnter() { player.anims.play("walk-right", true); },
     onUpdate() {
-      if (!cursors.right.isDown || !keys.shift.isDown) return "idle";
-      player.x += runSpeed;
-      return "run-right";
-    },
-    onExit() {}
-  },
-  "run-up": {
-    onEnter() { player.anims.play("walk-up", true); },
-    onUpdate() {
-      if (!cursors.up.isDown || !keys.shift.isDown) return "idle";
-      player.y -= runSpeed;
-      return "run-up";
-    },
-    onExit() {}
-  },
-  "run-down": {
-    onEnter() { player.anims.play("walk-down", true); },
-    onUpdate() {
-      if (!cursors.down.isDown || !keys.shift.isDown) return "idle";
-      player.y += runSpeed;
-      return "run-down";
+      // Stay in casting state until animation finishes
+      return "cast-spell-left";
     },
     onExit() {}
   },
 
-  "cast-spell": {
-    onEnter() { player.anims.play("cast-spell", true); },
+  "cast-spell-right": {
+    onEnter() {
+      player.setTexture("cast-spell-right");
+      player.anims.play("cast-spell-right");
+      player.once("animationcomplete-cast-spell-right", () => {
+        isCasting = false;
+      });
+    },
     onUpdate() {
-      return (keys.shift.isDown && !(cursors.left.isDown || cursors.right.isDown || cursors.up.isDown || cursors.down.isDown)) ? "cast-spell" : "idle";
+      return "cast-spell-right";
     },
     onExit() {}
   },
 
-  attack: {
-    onEnter() { player.anims.play("attack", true); },
+  "cast-spell-up": {
+    onEnter() {
+      player.setTexture("cast-spell-up");
+      player.anims.play("cast-spell-up");
+      player.once("animationcomplete-cast-spell-up", () => {
+        isCasting = false;
+      });
+    },
     onUpdate() {
-      return keys.space.isDown ? "attack" : "idle";
+      return "cast-spell-up";
     },
     onExit() {}
   },
 
-  "play-flute": {
-    onEnter() { player.anims.play("play-flute", true); },
+  "cast-spell-down": {
+    onEnter() {
+      player.setTexture("cast-spell-down");
+      player.anims.play("cast-spell-down");
+      player.once("animationcomplete-cast-spell-down", () => {
+        isCasting = false;
+      });
+    },
     onUpdate() {
-      return keys.ctrl.isDown ? "play-flute" : "idle";
+      return "cast-spell-down";
     },
     onExit() {}
   }
 };
 
 function preload() {
-  // Load player spritesheet with all animations
-  this.load.spritesheet("player", "https://i.imgur.com/7CU9Ky9.png", {
-    frameWidth: 120,
-    frameHeight: 120
+  // Load background image; replace this URL with your preferred background
+  this.load.image("background", "https://i.imgur.com/3e5XyI6.png");
+
+  // Load walking spritesheets, each frame 256x256 pixels
+  this.load.spritesheet("walk-down", "https://i.imgur.com/nbjlMve.png", {
+    frameWidth: 256,
+    frameHeight: 256
+  });
+  this.load.spritesheet("walk-up", "https://i.imgur.com/0cysHR2.png", {
+    frameWidth: 256,
+    frameHeight: 256
+  });
+  this.load.spritesheet("walk-right", "https://i.imgur.com/HU3w19x.png", {
+    frameWidth: 256,
+    frameHeight: 256
+  });
+  this.load.spritesheet("walk-left", "https://i.imgur.com/XXAjsBR.png", {
+    frameWidth: 256,
+    frameHeight: 256
   });
 
-  // Load background spritesheet
-  this.load.spritesheet("background", "https://i.imgur.com/yourBackground.png", {
-    frameWidth: 800,
-    frameHeight: 600
+  // Load casting spell spritesheets, also 256x256 pixels per frame
+  this.load.spritesheet("cast-spell-down", "https://i.imgur.com/gPlxrQT.png", {
+    frameWidth: 256,
+    frameHeight: 256
   });
-
-  // Load coin spritesheet for collectible
-  this.load.spritesheet("coin", "https://i.imgur.com/DP7vyRJ.png", {
-    frameWidth: 32,
-    frameHeight: 32
+  this.load.spritesheet("cast-spell-up", "https://i.imgur.com/JhpnwOz.png", {
+    frameWidth: 256,
+    frameHeight: 256
+  });
+  this.load.spritesheet("cast-spell-right", "https://i.imgur.com/C2l0ulK.png", {
+    frameWidth: 256,
+    frameHeight: 256
+  });
+  this.load.spritesheet("cast-spell-left", "https://i.imgur.com/nlvm4em.png", {
+    frameWidth: 256,
+    frameHeight: 256
   });
 }
 
 function create() {
-  // Add background sprite and animate it slowly
-  background = this.add.sprite(400, 300, "background");
-  this.anims.create({
-    key: "bg-anim",
-    frames: this.anims.generateFrameNumbers("background", { start: 0, end: 9 }),
-    frameRate: 2,
-    repeat: -1
-  });
-  background.anims.play("bg-anim");
+  // Add background image at top-left corner
+  background = this.add.image(0, 0, "background").setOrigin(0, 0);
 
-  // Create player sprite and keyboard input
-  player = this.add.sprite(400, 400, "player");
+  // Create player sprite starting facing down
+  player = this.add.sprite(400, 300, "walk-down");
+  player.direction = "down"; // Track player direction for casting animations
+
+  // Create cursor keys for input
   cursors = this.input.keyboard.createCursorKeys();
-  keys = {
-    space: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
-    shift: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT),
-    ctrl: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.CTRL)
-  };
 
-  // Player animations
-  this.anims.create({
-    key: "walk-left",
-    frames: this.anims.generateFrameNumbers("player", { start: 12, end: 17 }),
-    frameRate: 10,
-    repeat: -1
-  });
-  this.anims.create({
-    key: "walk-right",
-    frames: this.anims.generateFrameNumbers("player", { start: 18, end: 23 }),
-    frameRate: 10,
-    repeat: -1
-  });
-  this.anims.create({
-    key: "walk-up",
-    frames: this.anims.generateFrameNumbers("player", { start: 6, end: 11 }),
-    frameRate: 10,
-    repeat: -1
-  });
-  this.anims.create({
-    key: "walk-down",
-    frames: this.anims.generateFrameNumbers("player", { start: 0, end: 5 }),
-    frameRate: 10,
-    repeat: -1
-  });
-  this.anims.create({
-    key: "cast-spell",
-    frames: this.anims.generateFrameNumbers("player", { start: 24, end: 29 }),
-    frameRate: 12,
-    repeat: -1
-  });
-  this.anims.create({
-    key: "attack",
-    frames: this.anims.generateFrameNumbers("player", { start: 30, end: 35 }),
-    frameRate: 15,
-    repeat: -1
-  });
-  this.anims.create({
-    key: "play-flute",
-    frames: this.anims.generateFrameNumbers("player", { start: 36, end: 41 }),
-    frameRate: 8,
-    repeat: -1
+  // Create walking animations for all directions
+  ["down", "up", "right", "left"].forEach(dir => {
+    this.anims.create({
+      key: "walk-" + dir,
+      frames: this.anims.generateFrameNumbers("walk-" + dir, { start: 0, end: 8 }),
+      frameRate: 10,
+      repeat: -1
+    });
   });
 
-  // Create coin collectible sprite and animation
-  coin = this.add.sprite(600, 500, "coin").setInteractive();
-  this.anims.create({
-    key: "coin-spin",
-    frames: this.anims.generateFrameNumbers("coin", { start: 0, end: 7 }),
-    frameRate: 10,
-    repeat: -1
-  });
-  coin.anims.play("coin-spin");
-
-  // Click to pick up coin (hide coin)
-  coin.on("pointerdown", () => {
-    coin.visible = false;
+  // Create casting spell animations for all directions
+  ["down", "up", "right", "left"].forEach(dir => {
+    this.anims.create({
+      key: "cast-spell-" + dir,
+      frames: this.anims.generateFrameNumbers("cast-spell-" + dir, { start: 0, end: 22 }),
+      frameRate: 10,
+      repeat: 0
+    });
   });
 
   // Start in idle state
   currentState = "idle";
   states[currentState].onEnter();
+
+  // Listen for spacebar to start casting spell
+  this.input.keyboard.on("keydown-SPACE", () => {
+    if (!isCasting) {
+      isCasting = true;
+    }
+  });
 }
 
 function update() {
-  // Update player state machine every frame
+  // Check next state based on input and current conditions
   const nextState = states[currentState].onUpdate();
+
+  // If state changes, run exit and enter handlers
   if (nextState !== currentState) {
     states[currentState].onExit();
     states[nextState].onEnter();
