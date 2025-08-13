@@ -10,7 +10,7 @@ function create() {
   // Set up mouse click (or touch) listener
   this.input.on("pointerdown", function (pointer) {
     // Add a coin at the mouse/touch coordinates
-    this.add.image(pointer.x, pointer.y, "coin");
+    this.add.image(pointer.x, pointer.y, "coin").setScale(0.5);
   }, this);
 }
 
