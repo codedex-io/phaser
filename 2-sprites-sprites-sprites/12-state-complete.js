@@ -165,14 +165,14 @@ function create() {
   // Create walking animations for four directions
   this.anims.create({
     key: "walk-left",
-    frames: this.anims.generateFrameNumbers("foxGirl", { start: 12, end: 17 }),
+    frames: this.anims.generateFrameNumbers("foxGirl", { start: 18, end: 23 }),
     frameRate: 10,
     repeat: -1
   });
 
   this.anims.create({
     key: "walk-right",
-    frames: this.anims.generateFrameNumbers("foxGirl", { start: 18, end: 23 }),
+    frames: this.anims.generateFrameNumbers("foxGirl", { start: 12, end: 17 }),
     frameRate: 10,
     repeat: -1
   });
