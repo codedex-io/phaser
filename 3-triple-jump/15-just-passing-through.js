@@ -42,9 +42,6 @@ function create() {
 
   // create one ground platform at the bottom of the screen
   ground.create(400, 568, "ground").setScale(2).refreshBody();
-
-  // collider will come in Exercise 15!
-  // this.physics.add.collider(player, ground);
 }
 
 function update() {
