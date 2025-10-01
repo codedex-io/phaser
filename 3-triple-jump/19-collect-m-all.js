@@ -60,7 +60,7 @@ function create() {
   coin = this.physics.add.sprite(450, 350, "coin").setScale(0.05);
 
   // add an obstacle
-  obstacle = this.physics.add.sprite(200, 350, "obstacle").setScale(0.05);
+  obstacle = this.physics.add.sprite(200, 490, "obstacle").setScale(0.05);
 
   // add collider for coin and platform
   this.physics.add.collider(coin, ground);
@@ -71,6 +71,12 @@ function create() {
   // add collider for obstacle and player
   this.physics.add.collider(obstacle, player);
 
+  // make obstacle immovable
+  obstacle.setImmovable(true);
+
+  // stop gravity from pulling obstacle down
+  obstacle.body.allowGravity = false;
+  
   // add overlap for player and coin
   this.physics.add.overlap(player, coin, () => {
     coin.disableBody(true, true);
