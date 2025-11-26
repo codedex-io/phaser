@@ -30,10 +30,10 @@ function preload() {
   this.load.image("enemy", "https://i.imgur.com/sdFz5Xp.png");
   this.load.image("platform", "https://i.imgur.com/uEJoszN.png");
   this.load.image("coin", "https://i.imgur.com/mB3HMeU.png");
-  this.load.audio("bgMusic", "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3");
-  this.load.audio("coinSound", "https://freesound.org/data/previews/331/331912_3248244-lq.mp3");
-  this.load.audio("jumpSound", "https://freesound.org/data/previews/82/82921_1022651-lq.mp3");
-  this.load.audio("hitSound", "https://freesound.org/data/previews/257/257447_4486188-lq.mp3");
+  this.load.audio("bgMusic", "https://opengameart.org/sites/default/files/audio_preview/background_0.mp3.ogg");
+  this.load.audio("coinSound", "https://opengameart.org/sites/default/files/1_Coins_0.ogg");
+  this.load.audio("jumpSound", "https://opengameart.org/sites/default/files/audio_preview/jumpland.wav.mp3");
+  this.load.audio("hitSound", "https://opengameart.org/sites/default/files/audio_preview/hit01.wav.ogg");
 }
 
 function create() {

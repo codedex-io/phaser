@@ -17,9 +17,9 @@ let score = 0;
 let scoreText;
 
 function preload() {
-  this.load.audio("bgMusic", "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3");
-  this.load.audio("coinSound", "https://freesound.org/data/previews/331/331912_3248244-lq.mp3");
-  this.load.audio("jumpSound", "https://freesound.org/data/previews/82/82921_1022651-lq.mp3");
+  this.load.audio("bgMusic", "https://opengameart.org/sites/default/files/audio_preview/background_0.mp3.ogg");
+  this.load.audio("coinSound", "https://opengameart.org/sites/default/files/1_Coins_0.ogg");
+  this.load.audio("jumpSound", "https://opengameart.org/sites/default/files/audio_preview/jumpland.wav.mp3");
 
   this.load.image("player", "https://i.imgur.com/NSsqbju.png");
   this.load.image("platform", "https://i.imgur.com/uEJoszN.png");
