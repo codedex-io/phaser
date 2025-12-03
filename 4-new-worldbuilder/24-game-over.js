@@ -5,19 +5,23 @@ const config = {
   type: Phaser.AUTO,
   width: 800,
   height: 600,
-  physics: { default: "arcade", arcade: { gravity: { y: 700 }, debug: true }},
+  physics: {
+    default: "arcade",
+    arcade: { gravity: { y: 700 }, debug: true },
+  },
   scene: { preload, create, update },
 };
 
 let player;
 let cursors;
 let collectibles;
+let enemy;
 let score = 0;
 let lives = 3;
+let gameOver = false;
+let gameWon = false;
 let scoreText;
 let livesText;
-let enemy;
-let gameOver = false;
 
 function preload() {
   this.load.image("frog", "https://i.imgur.com/NSsqbju.png");
@@ -45,13 +49,26 @@ function create() {
   this.add.image(400, 300, "bg").setScale(1.3);
 
   const platforms = this.physics.add.staticGroup();
-  const gp = platforms.create(150, 500, "greenPlatform").setScale(2.5).refreshBody();
+  const greenPlatform = platforms.create(150, 500, "greenPlatform").setScale(2.5).refreshBody();
+  const yellowPlatform = platforms.create(400, 400, "yellowPlatform").setScale(2.5).refreshBody();
+  const bluePlatform = platforms.create(650, 300, "bluePlatform").setScale(2.5).refreshBody();
+  const pinkPlatform = platforms.create(300, 200, "pinkPlatform").setScale(2.5).refreshBody();
 
   player = this.physics.add.sprite(150, 460, "frog").setScale(2.5);
 
+  const obstacles = this.physics.add.staticGroup();
+  const greenObstacle = obstacles.create(greenPlatform.x + 30, greenPlatform.y - 60, "greenObstacle").setScale(2.5).refreshBody();
+  const yellowObstacle = obstacles.create(yellowPlatform.x + 30, yellowPlatform.y - 60, "yellowObstacle").setScale(2.5).refreshBody();
+  const blueObstacle = obstacles.create(bluePlatform.x + 30, bluePlatform.y - 60, "blueObstacle").setScale(2.5).refreshBody();
+  const pinkObstacle = obstacles.create(pinkPlatform.x + 30, pinkPlatform.y - 60, "pinkObstacle").setScale(2.5).refreshBody();
+
   collectibles = this.physics.add.group();
-  const c1 = collectibles.create(gp.x, gp.y - 150, "collectible1").setScale(1.5);
-  c1.body.allowGravity = false;
+  const c1 = collectibles.create(greenObstacle.x, greenObstacle.y - 50, "collectible1").setScale(1.5);
+  const c2 = collectibles.create(yellowObstacle.x, yellowObstacle.y - 50, "collectible2").setScale(1.5);
+  const c3 = collectibles.create(blueObstacle.x, blueObstacle.y - 50, "collectible3").setScale(1.5);
+  const c4 = collectibles.create(pinkObstacle.x, pinkObstacle.y - 50, "collectible4").setScale(1.5);
+
+  collectibles.children.iterate(c => c.body.allowGravity = false);
 
   enemy = this.physics.add.sprite(600, 450, "enemy").setScale(2);
   enemy.setVelocityX(120);
@@ -59,6 +76,7 @@ function create() {
   enemy.setCollideWorldBounds(true);
 
   this.physics.add.collider(player, platforms);
+  this.physics.add.collider(player, obstacles);
   this.physics.add.collider(enemy, platforms);
   this.physics.add.overlap(player, collectibles, collectItem, null, this);
   this.physics.add.collider(player, enemy, hitEnemy, null, this);
@@ -70,13 +88,20 @@ function create() {
 }
 
 function collectItem(player, item) {
+  if (gameOver || gameWon) return;
+
   item.disableBody(true, true);
   score += 10;
   scoreText.setText("Score: " + score);
+
+  if (collectibles.countActive(true) === 0) {
+    gameWon = true;
+    scoreText.setText("You Won!");
+  }
 }
 
 function hitEnemy() {
-  if (gameOver) return;
+  if (gameOver || gameWon) return;
 
   lives--;
   livesText.setText("Lives: " + lives);
@@ -91,7 +116,7 @@ function hitEnemy() {
 }
 
 function update() {
-  if (gameOver) return;
+  if (gameOver || gameWon) return;
 
   if (cursors.left.isDown) player.setVelocityX(-200);
   else if (cursors.right.isDown) player.setVelocityX(200);
